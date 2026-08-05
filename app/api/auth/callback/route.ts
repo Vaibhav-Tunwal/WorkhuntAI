@@ -15,10 +15,14 @@ export async function GET(req: NextRequest) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name: string) => cookieStore.get(name)?.value,
-                  set: (name: string, value: string, options: any) => { try { cookieStore.set({ name, value, ...options }) } catch {} },
-                  remove: (name: string, options: any) => { try { cookieStore.set({ name, value: '', ...options }) } catch {} },
-    }}
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
+        },
+      }
+    }
   )
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
@@ -33,7 +37,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/?error=not_university', req.url))
   }
 
-  // Check if profile exists
+  // Ensure the user row exists in public.users (handles cases where trigger missed it)
+  await supabase.from('users').upsert({
+    id: data.session.user.id,
+    email,
+    domain: email.split('@')[1],
+  }, { onConflict: 'id' })
+
+  // Check if profile exists — if not, send to onboarding
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')

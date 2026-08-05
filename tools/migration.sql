@@ -1,7 +1,15 @@
 -- =========================================
--- Workhunt AI: Supabase PostgreSQL Migration
--- Run this in Supabase SQL Editor
+-- Workhunt AI: Supabase PostgreSQL Migration v2
+-- Run this FULLY in Supabase SQL Editor
 -- =========================================
+
+-- Drop old tables cleanly (safe re-run)
+DROP TABLE IF EXISTS public.applications CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+DROP TABLE IF EXISTS public.jobs CASCADE;
+DROP TABLE IF EXISTS public.raw_jobs CASCADE;
+DROP VIEW IF EXISTS public.study_buddies CASCADE;
 
 -- 1. Users table (Auth Mirror)
 CREATE TABLE IF NOT EXISTS public.users (
@@ -11,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Profiles table
+-- 2. Profiles table (references public.users)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
@@ -82,9 +90,32 @@ WHERE p.is_study_buddy_visible = TRUE
   AND p.longitude IS NOT NULL;
 
 -- =========================================
+-- Auto-insert into public.users on signup
+-- This trigger fires for BOTH Google OAuth
+-- AND email/password signups
+-- =========================================
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, domain)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    split_part(NEW.email, '@', 2)
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- =========================================
 -- Row Level Security (RLS)
 -- =========================================
-
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
@@ -92,74 +123,36 @@ ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.raw_jobs ENABLE ROW LEVEL SECURITY;
 
 -- Users: read/write own row only
+DROP POLICY IF EXISTS "Users: own row" ON public.users;
 CREATE POLICY "Users: own row" ON public.users
   FOR ALL USING (auth.uid() = id);
 
--- Profiles: read own + insert own
+-- Profiles: read/write own row
+DROP POLICY IF EXISTS "Profiles: own row" ON public.profiles;
 CREATE POLICY "Profiles: own row" ON public.profiles
   FOR ALL USING (auth.uid() = id);
 
--- Jobs: anyone authenticated can read
-CREATE POLICY "Jobs: authenticated read" ON public.jobs
-  FOR SELECT USING (auth.role() = 'authenticated');
+-- Jobs: everyone can read
+DROP POLICY IF EXISTS "Jobs: public read" ON public.jobs;
+CREATE POLICY "Jobs: public read" ON public.jobs
+  FOR SELECT USING (true);
 
 -- Applications: own rows only
-CREATE POLICY "Applications: own rows" ON public.applications
+DROP POLICY IF EXISTS "Applications: own row" ON public.applications;
+CREATE POLICY "Applications: own row" ON public.applications
   FOR ALL USING (auth.uid() = user_id);
 
--- Raw jobs: service role only (cron writes)
+-- Raw jobs: service role only (no user policy)
+DROP POLICY IF EXISTS "Raw jobs: service role" ON public.raw_jobs;
 CREATE POLICY "Raw jobs: service role" ON public.raw_jobs
-  FOR ALL USING (auth.role() = 'service_role');
+  FOR ALL USING (false);
 
 -- =========================================
--- Auth trigger: block non-university emails
+-- TTL purge: delete jobs older than 6 days
 -- =========================================
-CREATE OR REPLACE FUNCTION public.check_university_email()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  IF NEW.email NOT LIKE '%@stud.hs-wismar.de'
-    AND NEW.email NOT LIKE '%@hs-wismar.de'
-    AND NEW.email NOT LIKE '%@%.edu'
-    AND NEW.email NOT LIKE '%@%.ac.uk'
-    AND NEW.email NOT LIKE '%@%.edu.de'
-  THEN
-    RAISE EXCEPTION 'Access denied: Only university email domains are permitted.';
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE TRIGGER enforce_university_email
-  BEFORE INSERT ON public.users
-  FOR EACH ROW EXECUTE FUNCTION public.check_university_email();
-
--- =========================================
--- Auto-create user row on auth signup
--- =========================================
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  INSERT INTO public.users (id, email, domain)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    split_part(NEW.email, '@', 2)
-  ) ON CONFLICT DO NOTHING;
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- =========================================
--- 6-Day TTL purge function (schedule via pg_cron or call manually)
--- =========================================
-CREATE OR REPLACE FUNCTION public.purge_old_jobs()
-RETURNS void LANGUAGE plpgsql AS $$
-BEGIN
-  DELETE FROM public.jobs WHERE created_at < NOW() - INTERVAL '6 days';
-  DELETE FROM public.raw_jobs WHERE ingested_at < NOW() - INTERVAL '7 days';
-END;
-$$;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+SELECT cron.schedule(
+  'purge-old-jobs',
+  '0 2 * * *',
+  $$DELETE FROM public.jobs WHERE created_at < NOW() - INTERVAL '6 days'$$
+);

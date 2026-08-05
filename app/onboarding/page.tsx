@@ -53,7 +53,14 @@ export default function OnboardingPage() {
   const handleSubmit = async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setLoading(false); return }
+
+    // Ensure public.users row exists first (FK safety net)
+    await supabase.from('users').upsert({
+      id: user.id,
+      email: user.email,
+      domain: (user.email ?? '').split('@')[1],
+    }, { onConflict: 'id' })
 
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
