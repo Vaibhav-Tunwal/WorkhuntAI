@@ -1,0 +1,63 @@
+# Workhunt AI — Build Progress State
+## Last Saved: 2026-08-05T11:01:00+02:00
+
+## ✅ COMPLETED FILES
+
+### Infrastructure
+- [x] `.env` — All secrets configured (Supabase, Gemini AQ., Google CSE, Telegram)
+- [x] `gemini.md` — Project Constitution with full DB schema
+- [x] `BIBLE.md` — Complete documentation for the project
+- [x] `findings.md` — Research notebook
+- [x] `progress.md` — Progress log
+- [x] `task_plan.md` — Master checklist (Phases 1-2 done)
+- [x] `tools/migration.sql` — Full Supabase migration (tables, RLS, triggers, views)
+
+### Architecture SOPs (Layer 1)
+- [x] `architecture/sop_ingestion.md`
+- [x] `architecture/sop_ai_matching.md`
+- [x] `architecture/sop_doc_studio.md`
+- [x] `architecture/sop_study_buddy.md`
+
+### Next.js Scaffold
+- [x] `package.json` — Next.js 14, Supabase, Zod, docx, leaflet, lucide-react installed
+- [x] `tsconfig.json`, `next.config.mjs`, `postcss.config.mjs`, `tailwind.config.ts`
+
+### Lib (Layer 3 — Core Logic)
+- [x] `lib/supabase/client.ts` — Browser-safe Supabase client (avoids next/headers in Client Components)
+- [x] `lib/supabase/server.ts` — Server-safe Supabase client and Admin instance with cookie headers
+- [x] `lib/gemini.ts` — Gemini AI with exponential backoff, match scoring, STAR cards, doc gen
+- [x] `lib/utils.ts` — Zod schemas, email validation, coordinate fuzzing, SHA-256 hash (fixed Zod v4 type signatures)
+- [x] `lib/ingestion.ts` — Federal API + Google CSE ingestion, dedup, Telegram alerts
+
+### API Routes (Layer 2)
+- [x] `app/api/jobs/ingest/route.ts` — Cron-protected job ingestion
+- [x] `app/api/jobs/match/route.ts` — AI match scoring
+- [x] `app/api/studio/generate/route.ts` — CV/Cover Letter generation
+- [x] `app/api/star/generate/route.ts` — STAR interview card generation
+- [x] `app/api/auth/callback/route.ts` — Google OAuth callback with domain checks (fixed for v0.15.0 helper clients)
+
+### App Shell
+- [x] `app/layout.tsx` — Root layout with Inter font, dark theme, meta
+- [x] `app/globals.css` — Full design system (glass, buttons, badges, chips, animations)
+- [x] `middleware.ts` — Auth middleware protecting all app routes (fixed client constructors)
+
+### Pages (UI)
+- [x] `app/page.tsx` — Landing page with Google OAuth login (fixed client constructors)
+- [x] `app/onboarding/page.tsx` — Profile setup wizard (fixed client constructors)
+- [x] `app/dashboard/page.tsx` — Main job feed with match scores (fixed client constructors)
+- [x] `app/studio/page.tsx` — CV/Cover Letter generator (fixed client constructors)
+- [x] `app/star/page.tsx` — STAR interview prep cards (fixed client constructors)
+- [x] `app/study-buddy/page.tsx` — Interactive map with fuzzy pins (fixed client constructors)
+
+### Components
+- [x] `components/Navbar.tsx` — Navigation bar (fixed client constructors)
+- [x] `components/JobCard.tsx` — Job listing card with score badge
+- [x] `components/STARCard.tsx` — Flip card for interview prep
+- [x] `components/MapView.tsx` — Leaflet map wrapper (dynamic client-side load)
+
+---
+
+## 🔑 KEY DECISIONS / RESOLUTIONS
+- **Auth helper version matching:** Resolved `createRouteHandlerClient` issues by shifting to unified `createServerClient` and `createBrowserClient` exports of the wrapper package `@supabase/auth-helpers-nextjs` v0.15.0.
+- **Client Component headers separation:** Split `supabase.ts` helper into client/server variants to avoid compilation failures when next/headers is imported on browser components.
+- **Zod 4.x Record typing:** Updated `z.record(z.unknown())` to `z.record(z.string(), z.unknown())` to satisfy compiler signature requirements.
