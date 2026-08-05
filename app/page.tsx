@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import { Briefcase, Brain, FileText, Users, ArrowRight, Shield, Zap, Globe } from 'lucide-react'
 
-export default function LandingPage() {
+function LandingPageContent() {
   const params = useSearchParams()
   const error = params.get('error')
 
@@ -97,3 +98,16 @@ export default function LandingPage() {
     </main>
   )
 }
+
+export default function LandingPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </main>
+    }>
+      <LandingPageContent />
+    </Suspense>
+  )
+}
+
