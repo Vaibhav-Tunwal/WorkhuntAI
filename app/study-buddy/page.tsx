@@ -102,16 +102,9 @@ export default function StudyBuddyPage() {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400">Instagram</label>
+              <label className="text-xs text-slate-400">Instagram Handle</label>
               <input type="text" value={handles.instagram}
                 onChange={e => setHandles(h => ({ ...h, instagram: e.target.value }))}
-                className="input-field mt-1" placeholder="@username" />
-            </div>
-
-            <div>
-              <label className="text-xs text-slate-400">Telegram</label>
-              <input type="text" value={handles.telegram}
-                onChange={e => setHandles(h => ({ ...h, telegram: e.target.value }))}
                 className="input-field mt-1" placeholder="@username" />
             </div>
 

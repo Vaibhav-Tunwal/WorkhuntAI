@@ -77,13 +77,14 @@ CREATE TABLE IF NOT EXISTS public.applications (
 CREATE OR REPLACE VIEW public.study_buddies AS
 SELECT
   p.id AS user_id,
+  p.full_name,
+  p.email,
   p.university_name AS university,
   p.study_program,
   p.skills,
   p.latitude + (random() * 2 - 1) * (50.0 / 111320.0) AS fuzzy_latitude,
   p.longitude + (random() * 2 - 1) * (50.0 / (111320.0 * cos(radians(p.latitude)))) AS fuzzy_longitude,
-  p.instagram_handle,
-  p.telegram_handle
+  p.instagram_handle
 FROM public.profiles p
 WHERE p.is_study_buddy_visible = TRUE
   AND p.latitude IS NOT NULL

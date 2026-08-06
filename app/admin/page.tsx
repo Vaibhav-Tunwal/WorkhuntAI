@@ -31,7 +31,8 @@ export default function AdminPage() {
 
   const checkAccessAndLoad = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'v.tunwal@stud.hs-wismar.de'
+    if (!user || user.email !== adminEmail) {
       router.push('/')
       return
     }

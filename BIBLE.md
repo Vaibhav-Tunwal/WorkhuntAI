@@ -13,13 +13,15 @@ Imagine you are a student at Hochschule Wismar University in Germany. You want t
 - Prepare for interviews alone.
 
 **Workhunt AI** does ALL of that for you automatically. It's like having a personal career robot that:
-1. **Fetches jobs** from Germany's official government job website every 8 hours.
+1. **Fetches jobs** from Germany's official government job website every 24 hours at midnight via Vercel Cron.
 2. **Scores your match** — tells you "You match 82% of this job!"
 3. **Tells you what skills you're missing** — with direct links to free courses.
 4. **Writes your CV and Cover Letter** in German and English using AI.
 5. **Generates interview prep cards** using the STAR method.
-6. **Lets you find study partners** near you without sharing your exact location.
+6. **Lets you find study partners** near you on a map showing Name, University, Department, Email, and Instagram (no Telegram).
 7. **Sends you Telegram notifications** when a great job appears.
+8. **Admin Portal** — Allows administrators (`v.tunwal@stud.hs-wismar.de`) to manage users and jobs.
+9. **Strict Signup-First Flow** — Users must Sign Up and confirm their university email before Signing In.
 
 ---
 

@@ -21,7 +21,7 @@ function LandingPageContent() {
   const router = useRouter()
   const urlError = params.get('error')
 
-  const [mode, setMode] = useState<AuthMode>('signin')
+  const [mode, setMode] = useState<AuthMode>('signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -63,13 +63,21 @@ function LandingPageContent() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
-    if (error) { notify(error.message, true); return }
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        notify('Account not found. Please sign up first, then verify your email.', true)
+      } else {
+        notify(error.message, true)
+      }
+      return
+    }
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Admin check
-    if (email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+    // Admin check — env var + hardcoded fallback
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'v.tunwal@stud.hs-wismar.de'
+    if (user.email === adminEmail) {
       router.push('/admin')
       return
     }
@@ -162,15 +170,16 @@ function LandingPageContent() {
                 <>
                   {/* Tab switcher */}
                   <div className="flex gap-1 bg-slate-800/50 rounded-xl p-1 mb-6">
-                    <button onClick={() => { setMode('signin'); clearMsg() }}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'signin' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
-                      Sign In
-                    </button>
                     <button onClick={() => { setMode('signup'); clearMsg() }}
                       className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'signup' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
                       Sign Up
                     </button>
+                    <button onClick={() => { setMode('signin'); clearMsg() }}
+                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'signin' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+                      Sign In
+                    </button>
                   </div>
+                  {mode === 'signup' && <p className="text-xs text-slate-500 -mt-4 mb-3 text-center">Create your account first, then sign in after verifying your email.</p>}
 
                   <div className="space-y-3">
                     <div className="relative">

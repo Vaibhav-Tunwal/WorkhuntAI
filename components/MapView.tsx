@@ -4,14 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 
 interface Buddy {
   user_id: string
+  full_name?: string
+  email?: string
   university: string
   study_program: string
   skills: string[]
   fuzzy_latitude: number
   fuzzy_longitude: number
   instagram_handle?: string
-  telegram_handle?: string
 }
+
 
 export default function MapView({ buddies }: { buddies: Buddy[] }) {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -57,15 +59,12 @@ export default function MapView({ buddies }: { buddies: Buddy[] }) {
         })
 
         const popupHtml = `
-          <div style="min-width:160px; font-family: sans-serif;">
-            <strong style="font-size:13px;">${b.study_program || 'Student'}</strong>
-            <p style="font-size:11px; color:#64748b; margin:2px 0 6px;">${b.university || 'Hochschule Wismar'}</p>
-            <div style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:6px;">
-              ${(b.skills || []).slice(0, 4).map(s =>
-                `<span style="font-size:10px; background:#ccfbf1; color:#0d9488; padding:1px 6px; border-radius:99px;">${s}</span>`
-              ).join('')}
-            </div>
-            ${b.telegram_handle ? `<a href="https://t.me/${b.telegram_handle}" target="_blank" style="font-size:11px; color:#0284c7;">@${b.telegram_handle} on Telegram</a>` : ''}
+          <div style="min-width:180px; font-family: sans-serif;">
+            <strong style="font-size:14px; color:#0f172a;">${b.full_name || 'Student'}</strong>
+            <p style="font-size:11px; color:#64748b; margin:2px 0 2px;">🏫 ${b.university || 'Hochschule Wismar'}</p>
+            <p style="font-size:11px; color:#64748b; margin:0 0 4px;">📚 ${b.study_program || 'Not specified'}</p>
+            ${b.email ? `<p style="font-size:11px; color:#0284c7; margin:0 0 4px;">✉️ ${b.email}</p>` : ''}
+            ${b.instagram_handle ? `<a href="https://instagram.com/${b.instagram_handle.replace('@','')}" target="_blank" style="font-size:11px; color:#e1306c; text-decoration:none;">📷 ${b.instagram_handle}</a>` : ''}
           </div>
         `
         circle.bindPopup(popupHtml).addTo(map)

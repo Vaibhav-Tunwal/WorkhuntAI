@@ -1,63 +1,30 @@
 # Workhunt AI — Build Progress State
-## Last Saved: 2026-08-05T11:01:00+02:00
+## Last Saved: 2026-08-06T19:22:00+02:00
 
-## ✅ COMPLETED FILES
+## ✅ COMPLETED FEATURES & RECENT updates
 
-### Infrastructure
-- [x] `.env` — All secrets configured (Supabase, Gemini AQ., Google CSE, Telegram)
-- [x] `gemini.md` — Project Constitution with full DB schema
-- [x] `BIBLE.md` — Complete documentation for the project
-- [x] `findings.md` — Research notebook
-- [x] `progress.md` — Progress log
-- [x] `task_plan.md` — Master checklist (Phases 1-2 done)
-- [x] `tools/migration.sql` — Full Supabase migration (tables, RLS, triggers, views)
+### 1. Auth Flow Enhancements
+- [x] Removed Google OAuth dependency completely.
+- [x] Default landing page state is now **Sign Up** (Sign up first before Sign in enforced).
+- [x] Implemented email/password verification flow (`app/page.tsx`).
+- [x] Created `app/forgot-password/page.tsx` and `app/reset-password/page.tsx` for password reset lifecycle.
+- [x] Hardcoded Admin fallback authentication check for `v.tunwal@stud.hs-wismar.de` in `app/page.tsx`, `components/Navbar.tsx`, and `app/admin/page.tsx`.
 
-### Architecture SOPs (Layer 1)
-- [x] `architecture/sop_ingestion.md`
-- [x] `architecture/sop_ai_matching.md`
-- [x] `architecture/sop_doc_studio.md`
-- [x] `architecture/sop_study_buddy.md`
+### 2. Admin Portal & Management
+- [x] Built full Admin Control Panel (`app/admin/page.tsx`).
+- [x] Added `app/api/admin/users/route.ts` (GET all students, DELETE student).
+- [x] Added `app/api/admin/jobs/route.ts` (GET all jobs, POST add job manually, DELETE job).
 
-### Next.js Scaffold
-- [x] `package.json` — Next.js 14, Supabase, Zod, docx, leaflet, lucide-react installed
-- [x] `tsconfig.json`, `next.config.mjs`, `postcss.config.mjs`, `tailwind.config.ts`
+### 3. Study Buddy Map Fixes
+- [x] Solved Leaflet SSR and hydration crashes by refactoring `components/MapView.tsx` to pure Leaflet API inside `useEffect`.
+- [x] Updated `tools/migration.sql` `study_buddies` view to select `full_name` and `email`.
+- [x] Updated map pin popup to display **Name**, **University**, **Department**, **Student Email**, and **Instagram Handle** exclusively (Telegram removed).
 
-### Lib (Layer 3 — Core Logic)
-- [x] `lib/supabase/client.ts` — Browser-safe Supabase client (avoids next/headers in Client Components)
-- [x] `lib/supabase/server.ts` — Server-safe Supabase client and Admin instance with cookie headers
-- [x] `lib/gemini.ts` — Gemini AI with exponential backoff, match scoring, STAR cards, doc gen
-- [x] `lib/utils.ts` — Zod schemas, email validation, coordinate fuzzing, SHA-256 hash (fixed Zod v4 type signatures)
-- [x] `lib/ingestion.ts` — Federal API + Google CSE ingestion, dedup, Telegram alerts
+### 4. Job Ingestion & Vercel Cron
+- [x] Created `vercel.json` configured with daily cron schedule `0 0 * * *` (midnight) compatible with Vercel Hobby plan.
+- [x] Added `GET` handler in `app/api/jobs/ingest/route.ts` for automated Vercel Cron invocations.
+- [x] Updated `lib/ingestion.ts` with browser User-Agent headers, Google Custom Search API key handling, and fallback direct DELETE query for 6-day TTL job cleanup.
 
-### API Routes (Layer 2)
-- [x] `app/api/jobs/ingest/route.ts` — Cron-protected job ingestion
-- [x] `app/api/jobs/match/route.ts` — AI match scoring
-- [x] `app/api/studio/generate/route.ts` — CV/Cover Letter generation
-- [x] `app/api/star/generate/route.ts` — STAR interview card generation
-- [x] `app/api/auth/callback/route.ts` — Google OAuth callback with domain checks (fixed for v0.15.0 helper clients)
-
-### App Shell
-- [x] `app/layout.tsx` — Root layout with Inter font, dark theme, meta
-- [x] `app/globals.css` — Full design system (glass, buttons, badges, chips, animations)
-- [x] `middleware.ts` — Auth middleware protecting all app routes (fixed client constructors)
-
-### Pages (UI)
-- [x] `app/page.tsx` — Landing page with Google OAuth login (fixed client constructors)
-- [x] `app/onboarding/page.tsx` — Profile setup wizard (fixed client constructors)
-- [x] `app/dashboard/page.tsx` — Main job feed with match scores (fixed client constructors)
-- [x] `app/studio/page.tsx` — CV/Cover Letter generator (fixed client constructors)
-- [x] `app/star/page.tsx` — STAR interview prep cards (fixed client constructors)
-- [x] `app/study-buddy/page.tsx` — Interactive map with fuzzy pins (fixed client constructors)
-
-### Components
-- [x] `components/Navbar.tsx` — Navigation bar (fixed client constructors)
-- [x] `components/JobCard.tsx` — Job listing card with score badge
-- [x] `components/STARCard.tsx` — Flip card for interview prep
-- [x] `components/MapView.tsx` — Leaflet map wrapper (dynamic client-side load)
-
----
-
-## 🔑 KEY DECISIONS / RESOLUTIONS
-- **Auth helper version matching:** Resolved `createRouteHandlerClient` issues by shifting to unified `createServerClient` and `createBrowserClient` exports of the wrapper package `@supabase/auth-helpers-nextjs` v0.15.0.
-- **Client Component headers separation:** Split `supabase.ts` helper into client/server variants to avoid compilation failures when next/headers is imported on browser components.
-- **Zod 4.x Record typing:** Updated `z.record(z.unknown())` to `z.record(z.string(), z.unknown())` to satisfy compiler signature requirements.
+### 5. Session Management & Profile Edit
+- [x] Created `components/SessionTracker.tsx` in `app/layout.tsx` for 15-minute inactivity session tracking and automatic logouts.
+- [x] Created `app/profile/page.tsx` allowing students to edit their name, study program, preferred roles, preferred locations, and add/remove skills dynamically.

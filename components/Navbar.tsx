@@ -12,7 +12,8 @@ export default function Navbar() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user && user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'v.tunwal@stud.hs-wismar.de'
+      if (user && user.email === adminEmail) {
         setIsAdmin(true)
       }
     })
