@@ -3,23 +3,35 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { Briefcase, FileText, Star, Users, Layout, LogOut } from 'lucide-react'
-
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Jobs', icon: Briefcase },
-  { href: '/studio', label: 'Doc Studio', icon: FileText },
-  { href: '/star', label: 'STAR Prep', icon: Star },
-  { href: '/study-buddy', label: 'Study Buddy', icon: Users },
-]
+import { Briefcase, FileText, Star, Users, Layout, LogOut, User } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function Navbar() {
   const pathname = usePathname()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user && user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        setIsAdmin(true)
+      }
+    })
+  }, [])
 
   const handleLogout = async () => {
-
     await supabase.auth.signOut()
     window.location.href = '/'
   }
+
+  const items = [
+    { href: '/dashboard', label: 'Jobs', icon: Briefcase },
+    { href: '/studio', label: 'Doc Studio', icon: FileText },
+    { href: '/star', label: 'STAR Prep', icon: Star },
+    { href: '/study-buddy', label: 'Study Buddy', icon: Users },
+    { href: '/profile', label: 'Profile', icon: User },
+    ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: Layout }] : []),
+  ]
+
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-700/50 px-4 py-2">
@@ -32,7 +44,7 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {items.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href)
             return (
               <Link key={href} href={href}

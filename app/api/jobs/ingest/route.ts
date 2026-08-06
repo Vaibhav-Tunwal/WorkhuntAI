@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runJobIngestion } from '@/lib/ingestion'
 
-// Protected cron route — called by GitHub Actions with a secret header
-export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('x-cron-secret')
+async function handleIngest(req: NextRequest) {
+  const authHeader = req.headers.get('x-cron-secret') || req.headers.get('Authorization')?.replace('Bearer ', '')
   if (authHeader !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -14,4 +13,12 @@ export async function POST(req: NextRequest) {
     const msg = e instanceof Error ? e.message : 'Unknown error'
     return NextResponse.json({ error: msg }, { status: 500 })
   }
+}
+
+export async function POST(req: NextRequest) {
+  return handleIngest(req)
+}
+
+export async function GET(req: NextRequest) {
+  return handleIngest(req)
 }

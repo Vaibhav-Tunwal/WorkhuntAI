@@ -24,7 +24,7 @@ async function fetchFederalJobs(): Promise<RawJob[]> {
       const res = await fetch(url, {
         headers: {
           'X-API-Key': 'jobboerse-jobsuche',
-          'User-Agent': 'WorkhuntAI/1.0',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         },
       })
       if (!res.ok) continue
@@ -49,10 +49,8 @@ async function fetchGoogleSearchJobs(): Promise<RawJob[]> {
 
   for (const q of queries) {
     try {
-      const url = `https://customsearch.googleapis.com/customsearch/v1?q=${encodeURIComponent(q)}&cx=${cx}&num=5`
-      const res = await fetch(url, {
-        headers: { 'x-goog-api-key': key }
-      })
+      const url = `https://customsearch.googleapis.com/customsearch/v1?q=${encodeURIComponent(q)}&cx=${cx}&key=${key}&num=5`
+      const res = await fetch(url)
       if (!res.ok) continue
       const data = await res.json()
       for (const item of data.items ?? []) {
@@ -76,12 +74,14 @@ async function sendTelegramAlert(jobTitle: string, company: string, jobId: strin
   if (!token || !chatId) return
 
   const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://workhuntai.vercel.app'}/dashboard?job=${jobId}`
-  const message = `🚀 *New Job Match!*\n\n*${jobTitle}*\nat ${company}\n\n[View & Apply →](${appUrl})`
+  
+  // Using HTML parsing to ensure absolute reliability without markdown escape failures
+  const message = `🚀 <b>New Job Match!</b>\n\n<b>Job:</b> ${jobTitle}\n<b>Company:</b> ${company}\n\n<a href="${appUrl}">View & Apply →</a>`
 
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' }),
+    body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
   }).catch(() => {})
 }
 
@@ -137,8 +137,12 @@ export async function runJobIngestion(): Promise<{ inserted: number; skipped: nu
     sendTelegramAlert(title, company, data.id)
   }
 
-  // Purge old jobs
-  await supabaseAdmin.rpc('purge_old_jobs')
+  // Purge old jobs (6-day TTL)
+  const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+  await supabaseAdmin
+    .from('jobs')
+    .delete()
+    .lt('created_at', sixDaysAgo)
 
   return { inserted, skipped }
 }

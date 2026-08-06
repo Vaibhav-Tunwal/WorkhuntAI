@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PROTECTED = ['/dashboard', '/onboarding', '/studio', '/star', '/study-buddy']
+const PROTECTED = ['/dashboard', '/onboarding', '/studio', '/star', '/study-buddy', '/profile', '/admin']
+
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
@@ -30,5 +31,13 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/onboarding/:path*', '/studio/:path*', '/star/:path*', '/study-buddy/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/onboarding/:path*',
+    '/studio/:path*',
+    '/star/:path*',
+    '/study-buddy/:path*',
+    '/profile/:path*',
+    '/admin/:path*'
+  ],
 }
