@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // Allowed academic email domains
-const ALLOWED_DOMAINS = ['stud.hs-wismar.de', 'hs-wismar.de']
+const ALLOWED_DOMAINS = ['stud.hs-wismar.de', 'hs-wismar.de', 'stud-mail.uni-wuerzburg.de']
 const ALLOWED_SUFFIXES = ['.edu', '.ac.uk', '.edu.de']
 
 export function isAcademicEmail(email: string): boolean {
