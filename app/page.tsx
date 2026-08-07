@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { isAcademicEmail } from '@/lib/utils'
 import { Briefcase, Brain, FileText, Users, ArrowRight, Shield, Zap, Globe, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 const features = [
@@ -32,11 +33,7 @@ function LandingPageContent() {
   const notify = (text: string, err = false) => { setMsg(text); setIsError(err) }
   const clearMsg = () => setMsg('')
 
-  const ALLOWED = ['stud.hs-wismar.de', 'hs-wismar.de']
-  const validateEmail = (e: string) => {
-    const domain = e.split('@')[1] ?? ''
-    return ALLOWED.includes(domain) || domain.endsWith('.edu') || domain.endsWith('.ac.uk')
-  }
+  const validateEmail = (e: string) => isAcademicEmail(e)
 
   const handleSignUp = async () => {
     if (!validateEmail(email)) {
