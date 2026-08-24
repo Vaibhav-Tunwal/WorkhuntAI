@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
+import { CITY_NAMES } from '@/lib/cities'
+import { ArrowRight, ArrowLeft, Check, MapPin } from 'lucide-react'
 
 const STUDY_PROGRAMS = [
   'Computer Science', 'Business Informatics', 'Industrial Engineering',
@@ -38,6 +39,7 @@ export default function OnboardingPage() {
   const [form, setForm] = useState({
     full_name: '',
     study_program: '',
+    current_city: '',
     skills: [] as string[],
     preferred_roles: [] as string[],
     preferred_locations: [] as string[],
@@ -67,6 +69,7 @@ export default function OnboardingPage() {
       email: user.email,
       full_name: form.full_name,
       study_program: form.study_program,
+      current_city: form.current_city,
       skills: form.skills,
       preferred_roles: form.preferred_roles,
       preferred_locations: form.preferred_locations,
@@ -103,6 +106,15 @@ export default function OnboardingPage() {
             </button>
           ))}
         </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-300 flex items-center gap-2"><MapPin className="w-4 h-4 text-teal-400" /> Current City in Germany</label>
+        <select value={form.current_city}
+          onChange={e => setForm(f => ({ ...f, current_city: e.target.value }))}
+          className="input-field mt-1 bg-slate-800">
+          <option value="">Select your city</option>
+          {CITY_NAMES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
       </div>
     </div>,
 
@@ -156,7 +168,7 @@ export default function OnboardingPage() {
     </div>,
   ]
 
-  const canNext = step === 0 ? form.full_name.length > 1 && form.study_program
+  const canNext = step === 0 ? form.full_name.length > 1 && form.study_program && form.current_city
     : step === 1 ? form.skills.length >= 2
     : form.preferred_roles.length >= 1
 

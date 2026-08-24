@@ -1,126 +1,105 @@
 # 📖 Workhunt AI — The Complete Bible (Explained Like You're 5)
 
-> Everything you need to know about this project. Every file, every function, every feature location. No jargon.
+> Everything you need to know about this project. Every file, every function, every feature. No jargon.
 
 ---
 
 ## 🌍 What is Workhunt AI?
 
-Imagine you are a university student in Germany (e.g. Hochschule Wismar, Uni Würzburg). You want to find a job or internship. Normally you'd have to:
-- Search on 10 different websites every day.
-- Write a CV from scratch.
-- Wonder if you're even qualified.
-- Prepare for interviews alone.
+This is a **dual-purpose platform**:
 
-**Workhunt AI** does ALL of that for you automatically. It's like having a personal career robot that:
-1. **Fetches jobs** from Germany's official government job website + Google Custom Search daily at midnight via Vercel Cron.
-2. **Scores your match** — tells you "You match 82% of this job!"
-3. **Tells you what skills you're missing** — with direct links to free courses.
-4. **Writes your CV and Cover Letter** in German and English using AI.
-5. **Generates interview prep cards** using the STAR method.
-6. **Lets you find study partners** near you on a map showing Name, University, Department, Student Email, and Instagram.
-7. **Sends you Telegram notifications** when a great job appears.
-8. **Admin Portal** — Allows administrators (`v.tunwal@stud.hs-wismar.de`) to manage users and jobs with CRUD powers.
-9. **Strict Signup-First Flow** — Users must Sign Up and confirm their university email before Signing In.
+### Part 1: Portfolio Website (`/`)
+The root URL is **Vaibhav Tunwal's personal portfolio** — showcasing AI automation expertise, professional experience, education, projects, skills, and hobbies. Built with a premium dark theme with teal/emerald accents, glassmorphism cards, and scroll animations.
+
+### Part 2: AI Job Portal (`/login` → `/dashboard`)
+A career co-pilot for German university students that:
+1. **Fetches 50+ jobs daily** from Germany's Federal Job Agency API across 15 search categories via Vercel Cron (midnight daily).
+2. **Scores your match** (0–100%) using Gemini AI.
+3. **Identifies missing skills** with gap analysis.
+4. **Generates ATS-compliant CVs** (German Lebenslauf + English CV) in-browser with zero server storage.
+5. **Creates STAR interview prep cards** using the Situation-Task-Action-Result method.
+6. **Shows a Germany Map** on the dashboard with your city (red pin) and job cities (teal circles).
+7. **Study Buddy Map** — find study partners near you with 100m privacy fuzzing.
+8. **Telegram Group** — invite shown after login for job alerts.
+9. **Admin Portal** — full CRUD, user map, analytics for admin (`v.tunwal@stud.hs-wismar.de`).
+10. **15-minute auto-logout** on inactivity for security.
 
 ---
 
 ## 🗺️ Feature & Function Locator Map
 
-Where to find every feature and function in the code:
-
-| Feature / Task | File Location | Key Function / Component |
+| Feature | File | Key Function/Component |
 |---|---|---|
-| **Allowed Domains & Email Checks** | [lib/utils.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/lib/utils.ts) | `isAcademicEmail()` function (contains `stud.hs-wismar.de`, `stud-mail.uni-wuerzburg.de`, etc.) |
-| **Sign Up & Sign In Logic** | [app/page.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/page.tsx) | `handleSignUp()`, `handleSignIn()`, `handleForgotPassword()` |
-| **Password Reset Page** | [app/reset-password/page.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/reset-password/page.tsx) | `handleReset()` |
-| **Auth Callback & Auto User Creation** | [app/api/auth/callback/route.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/api/auth/callback/route.ts) | `GET()` handler |
-| **Admin Control Panel UI** | [app/admin/page.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/admin/page.tsx) | `AdminPage()`, `handleDeleteUser()`, `handleDeleteJob()`, `handleAddJobSubmit()` |
-| **Admin API Routes** | [app/api/admin/users/route.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/api/admin/users/route.ts), [app/api/admin/jobs/route.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/api/admin/jobs/route.ts) | `GET()`, `POST()`, `DELETE()` handlers |
-| **Job Ingestion Engine** | [lib/ingestion.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/lib/ingestion.ts) | `runJobIngestion()`, `fetchFederalJobs()`, `fetchGoogleSearchJobs()`, `sendTelegramAlert()` |
-| **Vercel Cron Trigger API** | [app/api/jobs/ingest/route.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/api/jobs/ingest/route.ts) | `GET()`, `POST()` handlers |
-| **Vercel Cron Config** | [vercel.json](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/vercel.json) | Cron schedule `0 0 * * *` (midnight daily) |
-| **AI Matching Engine** | [lib/gemini.ts](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/lib/gemini.ts) | `scoreJobMatch()`, `extractJobSkills()`, `generateSTARCards()`, `generateDocumentText()` |
-| **Study Buddy Interactive Map** | [components/MapView.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/components/MapView.tsx) | `MapView()` component (pure Leaflet implementation) |
-| **Study Buddy Page & Settings** | [app/study-buddy/page.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/study-buddy/page.tsx) | `StudyBuddyPage()`, `handleSave()` |
-| **Edit Student Profile** | [app/profile/page.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/app/profile/page.tsx) | `ProfilePage()`, `handleSave()`, `toggleItem()` |
-| **15-Min Inactivity Auto-Logout** | [components/SessionTracker.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/components/SessionTracker.tsx) | `SessionTracker()` component |
-| **Navbar & Admin Link** | [components/Navbar.tsx](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/components/Navbar.tsx) | `Navbar()` component |
-| **Database Schema & Triggers** | [tools/migration.sql](file:///c:/Users/Lenovo/OneDrive/Desktop/Workhunt_AI/tools/migration.sql) | `handle_new_user()` trigger, `study_buddies` view, table definitions |
+| **Portfolio Landing** | `app/page.tsx` | `PortfolioPage()` — hero, about, experience, projects, skills, hobbies, CTA |
+| **Job Portal Login** | `app/login/page.tsx` | `handleSignUp()`, `handleSignIn()`, `handleForgotPassword()`, Telegram modal |
+| **Password Reset** | `app/reset-password/page.tsx` | `handleReset()` |
+| **Onboarding + City Picker** | `app/onboarding/page.tsx` | 3-step wizard with city dropdown from `lib/cities.ts` |
+| **Dashboard + Germany Map** | `app/dashboard/page.tsx` | Split layout: job feed + `GermanyMap` sidebar |
+| **Germany Map Component** | `components/GermanyMap.tsx` | Leaflet map with user city (red) + job cities (teal circles) |
+| **Study Buddy Map** | `components/MapView.tsx` | Pure Leaflet — shows Name, University, Dept, Email, Instagram |
+| **Admin Control Panel** | `app/admin/page.tsx` | User CRUD, job CRUD, analytics, add-job modal |
+| **Admin API — Users** | `app/api/admin/users/route.ts` | `GET()` list, `DELETE()` user |
+| **Admin API — Jobs** | `app/api/admin/jobs/route.ts` | `GET()` list, `POST()` create, `DELETE()` job |
+| **Job Ingestion Engine** | `lib/ingestion.ts` | `runJobIngestion()` — 15 search terms, Federal API + Google CSE, Telegram alerts, 6-day TTL purge |
+| **Vercel Cron Trigger** | `app/api/jobs/ingest/route.ts` | `GET()` + `POST()` with cron secret auth |
+| **Cron Schedule** | `vercel.json` | `0 0 * * *` (daily midnight) |
+| **AI Engine** | `lib/gemini.ts` | `scoreJobMatch()`, `extractJobSkills()`, `generateSTARCards()`, `generateDocumentText()` |
+| **Email Validation** | `lib/utils.ts` | `isAcademicEmail()` — supports `stud.hs-wismar.de`, `stud-mail.uni-wuerzburg.de`, `.edu`, `.ac.uk` |
+| **German Cities Data** | `lib/cities.ts` | `GERMAN_CITIES` coordinate map, `CITY_NAMES` sorted list |
+| **Profile Editor** | `app/profile/page.tsx` | Skills, roles, locations CRUD |
+| **Session Tracker** | `components/SessionTracker.tsx` | 15-min inactivity auto-logout |
+| **Navigation Bar** | `components/Navbar.tsx` | Dynamic admin badge (⚡ Admin with ShieldAlert icon) |
+| **Auth Middleware** | `middleware.ts` | Protects `/dashboard`, `/admin`, `/profile`, etc. Redirects to `/login` |
+| **Database Schema** | `tools/migration.sql` | Tables: `users`, `profiles` (with `current_city`), `jobs`, `applications`, `study_buddies` view |
 
 ---
 
-## 🏗️ The Three Layer System (A.N.T. Architecture)
+## 🏗️ Architecture (A.N.T. — 3 Layers)
 
-Think of the app like a restaurant:
-- **Layer 1: The Menu (SOPs / architecture/)** — Written instructions that say exactly how each dish should be made. Rules and recipes.
-- **Layer 2: The Waiter (Navigation / Next.js API Routes)** — Takes your order (API requests) to the right kitchen tool.
-- **Layer 3: The Kitchen (Tools / lib/)** — Prepares the food. Single-purpose functions.
-
----
-
-## 📁 Complete File-by-File Guide
-
-### 🔐 `.env` — The Secret Keychain
-**What it is:** Stores passwords and API keys.
-- `NEXT_PUBLIC_SUPABASE_URL`: Address of cloud DB
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Public read key
-- `SUPABASE_SERVICE_ROLE_KEY`: Admin write key
-- `GEMINI_API_KEY`: Google Gemini AI key
-- `GOOGLE_CUSTOM_SEARCH_API_KEY`: Google Search API key
-- `GOOGLE_SEARCH_ENGINE_ID`: Custom search engine ID
-- `TELEGRAM_BOT_TOKEN`: Telegram bot token
-- `TELEGRAM_CHAT_ID`: Telegram channel ID
-- `NEXT_PUBLIC_ADMIN_EMAIL`: Admin email (`v.tunwal@stud.hs-wismar.de`)
-- `CRON_SECRET`: Vercel cron secret key
-
-### 📜 `gemini.md` — The Project Constitution
-Supreme rulebook containing table definitions and non-negotiable architectural rules.
-
-### 📁 `app/` Folder — The Pages (Screens) & API Routes
-- `app/page.tsx`: Landing page with signup-first form, email/pass auth.
-- `app/reset-password/page.tsx`: Password reset screen.
-- `app/onboarding/page.tsx`: 4-step wizard for new student setup.
-- `app/dashboard/page.tsx`: Job feed with AI match scores and application tracker.
-- `app/profile/page.tsx`: Profile editor (skills, roles, locations).
-- `app/admin/page.tsx`: Admin control panel (users & jobs CRUD).
-- `app/studio/page.tsx`: Zero-storage CV & Cover Letter generator.
-- `app/star/page.tsx`: STAR interview flashcards.
-- `app/study-buddy/page.tsx`: Peer map settings & interactive leaflet map.
-
-### 📁 `lib/` Folder — Core Functions
-- `lib/utils.ts`: `isAcademicEmail()` validation (supports `@stud.hs-wismar.de`, `@stud-mail.uni-wuerzburg.de`, `.edu`, etc.), Zod schemas.
-- `lib/supabase/client.ts`: Browser Supabase client.
-- `lib/supabase/server.ts`: Server-side & admin Supabase client.
-- `lib/gemini.ts`: AI engine logic with exponential backoff.
-- `lib/ingestion.ts`: Federal API + Google CSE job scraper & Telegram alerts.
-
-### 📁 `components/` Folder — Reusable UI Components
-- `components/Navbar.tsx`: Header navigation bar with dynamic Admin link.
-- `components/JobCard.tsx`: Job listing card with match score badge.
-- `components/STARCard.tsx`: Interview prep flashcard.
-- `components/MapView.tsx`: Pure Leaflet map renderer (shows Name, University, Dept, Email, Instagram).
-- `components/SessionTracker.tsx`: Tracks mouse/keyboard activity and auto logs out after 15 minutes of inactivity.
+- **Layer 1 (SOPs):** `architecture/` folder — markdown instructions for each feature
+- **Layer 2 (Navigation):** `app/api/` routes — take requests, route to the right tool
+- **Layer 3 (Tools):** `lib/` folder — atomic functions that do one thing perfectly
 
 ---
 
-## 🗄️ Database Structure (Supabase PostgreSQL)
+## 🔐 `.env` Variables
 
-- `users`: Created automatically on signup via PostgreSQL trigger (`handle_new_user()`).
-- `profiles`: Holds student name, program, skills, roles, locations, handles.
-- `raw_jobs`: Temp inbox for scraped job JSON.
-- `jobs`: Unique active job listings with SHA-256 hash deduplication. Auto-deleted after 6 days.
-- `applications`: Student job application status tracker (Bookmarked, Applied, etc.).
-- `study_buddies`: Security view with 100m randomized coordinate fuzzing exposing Name, University, Program, Email, Instagram.
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase database address |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public read key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin write key |
+| `GEMINI_API_KEY` | Google Gemini AI key |
+| `GOOGLE_CUSTOM_SEARCH_API_KEY` | Google Search API |
+| `GOOGLE_SEARCH_ENGINE_ID` | Custom search engine ID |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot |
+| `TELEGRAM_CHAT_ID` | Telegram group |
+| `NEXT_PUBLIC_ADMIN_EMAIL` | Admin email (`v.tunwal@stud.hs-wismar.de`) |
+| `CRON_SECRET` | Vercel cron authorization |
+| `NEXT_PUBLIC_APP_URL` | Deployed Vercel URL |
 
 ---
 
-## 🚀 Deployment Pipeline
+## 🗄️ Database (Supabase PostgreSQL)
 
-1. **Code Repository:** GitHub
-2. **Hosting Platform:** Vercel (Next.js 14)
-3. **Database:** Supabase PostgreSQL
-4. **Automated Cron:** Vercel Crons (`vercel.json` - runs daily at `0 0 * * *`)
-5. **AI Brain:** Google Gemini 2.5 Flash
+- **`users`** — Auto-created via trigger on signup. Stores id, email, domain.
+- **`profiles`** — Student name, program, skills, roles, locations, `current_city`, Instagram, buddy visibility.
+- **`jobs`** — Deduplicated via SHA-256 hash. 6-day TTL auto-purge. 15 search categories.
+- **`applications`** — Tracks bookmarks, matches, scores, missing skills per user-job pair.
+- **`study_buddies`** — SQL view with 100m coordinate fuzzing. Exposes name, email, university, program, Instagram.
 
-*Last Updated: 2026-08-07 | All features up-to-date and verified.*
+---
+
+## 🚀 Deployment
+
+| Component | Platform | Tier |
+|---|---|---|
+| Web App | Vercel (Next.js 14) | Free |
+| Database | Supabase PostgreSQL | Free |
+| AI | Google Gemini 2.5 Flash | Free (15 RPM) |
+| Cron | Vercel Crons | Free (daily) |
+| Alerts | Telegram Bot API | Free |
+
+---
+
+*Last Updated: 2026-08-24 | v2 Architecture Overhaul Complete*

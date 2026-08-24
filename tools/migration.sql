@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   longitude NUMERIC,
   instagram_handle TEXT,
   telegram_handle TEXT,
+  current_city TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

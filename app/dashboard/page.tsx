@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import Navbar from '@/components/Navbar'
 import JobCard from '@/components/JobCard'
-import { Search, Filter, RefreshCw, TrendingUp, Bookmark, CheckCircle } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { Search, Filter, RefreshCw, TrendingUp, Bookmark, CheckCircle, Map } from 'lucide-react'
+
+const GermanyMap = dynamic(() => import('@/components/GermanyMap'), { ssr: false })
 
 interface Job {
   id: string; title: string; company: string; location: string;
@@ -14,7 +17,7 @@ interface Application {
   id: string; job_id: string; status: string; match_score: number; missing_skills: string[];
 }
 interface Profile {
-  skills: string[]; preferred_roles: string[];
+  skills: string[]; preferred_roles: string[]; current_city?: string;
 }
 
 export default function DashboardPage() {
@@ -39,7 +42,7 @@ export default function DashboardPage() {
     const [jobsRes, appsRes, profileRes] = await Promise.all([
       supabase.from('jobs').select('*').order('created_at', { ascending: false }).limit(50),
       supabase.from('applications').select('*').eq('user_id', user.id),
-      supabase.from('profiles').select('skills, preferred_roles').eq('id', user.id).single(),
+      supabase.from('profiles').select('skills, preferred_roles, current_city').eq('id', user.id).single(),
     ])
 
     setJobs(jobsRes.data ?? [])
@@ -111,6 +114,17 @@ export default function DashboardPage() {
       ? Math.round(apps.filter(a => a.match_score).reduce((s, a) => s + a.match_score, 0) / apps.filter(a => a.match_score).length)
       : 0,
   }
+  // Compute job city counts for the map
+  const jobCities = useMemo(() => {
+    const counts: Record<string, number> = {}
+    jobs.forEach(j => {
+      const city = j.location?.trim()
+      if (city) counts[city] = (counts[city] || 0) + 1
+    })
+    return Object.entries(counts).map(([city, count]) => ({ city, count }))
+  }, [jobs])
+
+  const [showMap, setShowMap] = useState(true)
 
   return (
     <main className="min-h-screen pt-16">
@@ -155,31 +169,60 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Job Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full" />
+        {/* Main Content — split layout */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Job Feed */}
+          <div className={showMap ? 'lg:col-span-2' : 'lg:col-span-3'}>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full" />
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center py-20 text-slate-500">
+                <p className="text-lg">No jobs found</p>
+                <p className="text-sm mt-2">Try adjusting your search or wait for the next ingestion cycle.</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {filteredJobs.map(job => {
+                  const app = getJobApp(job.id)
+                  return (
+                    <JobCard key={job.id} id={job.id} title={job.title} company={job.company}
+                      location={job.location} extractedSkills={job.extracted_skills}
+                      externalUrl={job.external_source_url}
+                      matchScore={app?.match_score} missingSkills={app?.missing_skills}
+                      onMatch={scoring === job.id ? undefined : handleMatch}
+                      onBookmark={handleBookmark} />
+                  )
+                })}
+              </div>
+            )}
           </div>
-        ) : filteredJobs.length === 0 ? (
-          <div className="text-center py-20 text-slate-500">
-            <p className="text-lg">No jobs found</p>
-            <p className="text-sm mt-2">Try adjusting your search or wait for the next ingestion cycle.</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {filteredJobs.map(job => {
-              const app = getJobApp(job.id)
-              return (
-                <JobCard key={job.id} id={job.id} title={job.title} company={job.company}
-                  location={job.location} extractedSkills={job.extracted_skills}
-                  externalUrl={job.external_source_url}
-                  matchScore={app?.match_score} missingSkills={app?.missing_skills}
-                  onMatch={scoring === job.id ? undefined : handleMatch}
-                  onBookmark={handleBookmark} />
-              )
-            })}
-          </div>
-        )}
+
+          {/* Germany Map Sidebar */}
+          {showMap && (
+            <div className="lg:col-span-1">
+              <div className="glass p-4 sticky top-20">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                    <Map className="w-4 h-4 text-teal-400" /> Job Locations
+                  </h3>
+                  <button onClick={() => setShowMap(false)} className="text-xs text-slate-500 hover:text-slate-300">Hide</button>
+                </div>
+                <GermanyMap userCity={profile?.current_city} jobCities={jobCities} />
+                <p className="text-xs text-slate-600 mt-2 text-center">
+                  🔴 Your city · 🟢 Job cities ({jobCities.length})
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!showMap && (
+            <button onClick={() => setShowMap(true)} className="fixed bottom-6 right-6 btn-primary flex items-center gap-2 shadow-lg z-30">
+              <Map className="w-4 h-4" /> Show Map
+            </button>
+          )}
+        </div>
       </div>
     </main>
   )

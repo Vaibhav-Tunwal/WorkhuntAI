@@ -1,260 +1,338 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { isAcademicEmail } from '@/lib/utils'
-import { Briefcase, Brain, FileText, Users, ArrowRight, Shield, Zap, Globe, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Brain, Database, BarChart3, Bot, Briefcase, GraduationCap, Mail, Link2, Phone, ChevronDown, ExternalLink, Sparkles, Trophy, Target, Zap, Hash, Globe } from 'lucide-react'
 
-const features = [
-  { icon: Briefcase, title: 'Auto Job Discovery', desc: 'Scans German Federal Job Agency every 8 hours. Zero manual searching.' },
-  { icon: Brain, title: 'AI Match Scoring', desc: 'Gemini AI scores every job against your profile. 0–100% match with skill gap analysis.' },
-  { icon: FileText, title: 'Document Studio', desc: 'Generates ATS-compliant German Lebenslauf & English CV. Zero files touch our server.' },
-  { icon: Users, title: 'Study Buddy Map', desc: 'Find study partners near you. Location is fuzzed to 100m for privacy.' },
-  { icon: Zap, title: 'STAR Interview Prep', desc: 'AI-generated interview story cards using the Situation-Task-Action-Result method.' },
-  { icon: Globe, title: 'Telegram Alerts', desc: 'Get instant notifications when a high-match job appears. Never miss an opportunity.' },
+const EXPERIENCE = [
+  {
+    period: '06.2024 – 04.2025',
+    title: 'Business Development Analyst',
+    company: 'Savvy Retail Private Limited, India',
+    bullets: [
+      'Analyzed transaction data for 120+ SKUs, improving profit margins by 9.3%',
+      'Reduced overstock by 17% through predictive demand modeling',
+      'Increased category ROI by 22% via data-driven assortment optimization',
+    ],
+  },
+  {
+    period: '11.2022 – 05.2024',
+    title: 'Data Scientist & Analytics Engineer',
+    company: 'M&L Consulting Private Limited, India',
+    bullets: [
+      'Built scalable PMIS SaaS data models for infrastructure project management',
+      'Developed ML prediction models for project timeline & cost forecasting',
+      'Created Power BI dashboards serving 50+ enterprise clients',
+    ],
+  },
 ]
 
-type AuthMode = 'signin' | 'signup' | 'verify' | 'forgot' | 'forgot_sent'
+const EDUCATION = [
+  { period: '09.2025 – Present', title: 'Master in International Management', school: 'Hochschule Wismar, Germany' },
+  { period: '09.2021 – 03.2026', title: 'B.Sc. Data Science & Programming', school: 'IIT Madras, India' },
+  { period: '09.2020 – 08.2024', title: 'B.Tech. Computer Science', school: 'Rajasthan Technical University, India' },
+  { period: '06.2025', title: 'Mini MBA', school: 'IBMI Berlin, Germany' },
+]
 
-function LandingPageContent() {
-  const params = useSearchParams()
-  const router = useRouter()
-  const urlError = params.get('error')
+const SKILLS = [
+  { cat: 'AI & ML', items: ['Python', 'Supervised/Unsupervised Learning', 'NLP', 'AI Agent Workflows'] },
+  { cat: 'Data Engineering', items: ['SQL', 'MySQL', 'ETL Pipelines', 'RESTful APIs', 'Database Design'] },
+  { cat: 'Business Intelligence', items: ['Power BI', 'Data Modeling', 'Financial Analytics', 'KPI Dashboards'] },
+  { cat: 'Automation & DevOps', items: ['AI Process Automation', 'Git/GitHub', 'Linux/Bash', 'Vercel', 'Supabase'] },
+  { cat: 'Ventures', items: ['Nutreich Lifesciences (R&D)', 'ChallengeX (Platform Architecture)'] },
+]
 
-  const [mode, setMode] = useState<AuthMode>('signup')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [isError, setIsError] = useState(false)
+const HOBBIES = [
+  { icon: Target, name: 'Poker', desc: 'Game theory & probabilistic decision-making under uncertainty' },
+  { icon: Trophy, name: 'Chess', desc: 'Strategic pattern recognition & multi-step planning' },
+  { icon: Hash, name: 'Competitive Coding', desc: 'Algorithmic thinking & mathematical optimization' },
+  { icon: Sparkles, name: 'Rubik\'s Cube', desc: 'Spatial reasoning & systematic problem decomposition' },
+]
 
-  const notify = (text: string, err = false) => { setMsg(text); setIsError(err) }
-  const clearMsg = () => setMsg('')
+export default function PortfolioPage() {
+  const [scrollY, setScrollY] = useState(0)
 
-  const validateEmail = (e: string) => isAcademicEmail(e)
-
-  const handleSignUp = async () => {
-    if (!validateEmail(email)) {
-      notify('Only university email addresses are allowed (e.g. @stud.hs-wismar.de)', true)
-      return
-    }
-    if (password.length < 8) {
-      notify('Password must be at least 8 characters', true)
-      return
-    }
-    setLoading(true)
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/api/auth/callback` }
-    })
-    setLoading(false)
-    if (error) { notify(error.message, true); return }
-    setMode('verify')
-  }
-
-  const handleSignIn = async () => {
-    if (!email || !password) { notify('Please enter your email and password', true); return }
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        notify('Account not found. Please sign up first, then verify your email.', true)
-      } else {
-        notify(error.message, true)
-      }
-      return
-    }
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    // Admin check — env var + hardcoded fallback
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'v.tunwal@stud.hs-wismar.de'
-    if (user.email === adminEmail) {
-      router.push('/admin')
-      return
-    }
-
-    const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).single()
-    router.push(profile ? '/dashboard' : '/onboarding')
-  }
-
-  const handleForgotPassword = async () => {
-    if (!email) { notify('Please enter your email address', true); return }
-    setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    setLoading(false)
-    if (error) { notify(error.message, true); return }
-    setMode('forgot_sent')
-  }
+  useEffect(() => {
+    const handler = () => setScrollY(window.scrollY)
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
 
   return (
-    <main className="min-h-screen">
-      <section className="relative overflow-hidden">
+    <main className="min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
+      {/* Floating Nav */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrollY > 60 ? 'bg-slate-950/90 backdrop-blur-md border-b border-slate-800/50' : ''}`}>
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="font-bold text-lg">
+            <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">V</span>T
+          </span>
+          <div className="flex items-center gap-6 text-sm">
+            <a href="#about" className="text-slate-400 hover:text-teal-400 transition-colors hidden md:block">About</a>
+            <a href="#experience" className="text-slate-400 hover:text-teal-400 transition-colors hidden md:block">Experience</a>
+            <a href="#projects" className="text-slate-400 hover:text-teal-400 transition-colors hidden md:block">Projects</a>
+            <a href="#skills" className="text-slate-400 hover:text-teal-400 transition-colors hidden md:block">Skills</a>
+            <Link href="/login" className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-5 py-2 rounded-xl transition-all duration-200 active:scale-95 text-sm">
+              Job Portal →
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-teal-950/20 via-slate-950 to-slate-950" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-teal-500/8 rounded-full blur-[120px]" />
+        <div className="absolute bottom-20 right-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px]" />
 
-        <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
-            {/* Hero text */}
-            <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-teal-950/50 border border-teal-800/50 rounded-full px-4 py-1.5 mb-8">
-                <Shield className="w-4 h-4 text-teal-400" />
-                <span className="text-xs font-medium text-teal-300">University Email Required · Privacy First</span>
+        <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
+          <div className="w-32 h-32 mx-auto mb-8 rounded-full overflow-hidden border-2 border-teal-500/30 shadow-lg shadow-teal-500/10">
+            <img src="/avatar.png" alt="Vaibhav Tunwal" className="w-full h-full object-cover" />
+          </div>
+
+          <div className="inline-flex items-center gap-2 bg-teal-950/50 border border-teal-800/50 rounded-full px-4 py-1.5 mb-6">
+            <Bot className="w-4 h-4 text-teal-400" />
+            <span className="text-xs font-medium text-teal-300">AI Automation · Agent Development · Data Science</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+            <span className="bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-300 bg-clip-text text-transparent">Vaibhav Tunwal</span>
+          </h1>
+
+          <p className="text-xl md:text-2xl text-slate-400 mt-6 max-w-2xl mx-auto leading-relaxed">
+            I build <span className="text-teal-300 font-medium">AI automation systems</span> and{' '}
+            <span className="text-emerald-300 font-medium">intelligent agents</span> that transform how businesses operate.
+            From predictive analytics to end-to-end workflow automation.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
+            <a href="#projects" className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-2">
+              <Sparkles className="w-5 h-5" /> View Projects
+            </a>
+            <a href="mailto:Kumarvaibhav40555@gmail.com" className="bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium px-8 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
+              <Mail className="w-5 h-5" /> Get in Touch
+            </a>
+          </div>
+
+          <a href="#about" className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <ChevronDown className="w-6 h-6 text-slate-600 animate-bounce" />
+          </a>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-3xl font-bold mb-8">
+          About <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Me</span>
+        </h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-4 text-slate-400 leading-relaxed">
+            <p>
+              I'm an <span className="text-slate-200 font-medium">AI Automation Expert</span> and{' '}
+              <span className="text-slate-200 font-medium">Data Scientist</span> with a rare triple background in
+              Computer Science (B.Tech), Data Science (B.Sc. IIT Madras), and International Management (M.Sc. Hochschule Wismar).
+            </p>
+            <p>
+              I specialize in designing <span className="text-teal-300">intelligent automation pipelines</span> that
+              replace manual business processes with AI-driven workflows — from ML-powered forecasting engines to
+              autonomous agent systems that scrape, analyze, and report without human intervention.
+            </p>
+            <p>
+              My consulting work has improved profit margins by <span className="text-emerald-300 font-semibold">9.3%</span>,
+              reduced overstock by <span className="text-emerald-300 font-semibold">17%</span>, and delivered
+              BI dashboards to <span className="text-emerald-300 font-semibold">50+ enterprise clients</span>.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: Brain, label: 'ML Models Built', value: '25+' },
+              { icon: BarChart3, label: 'Dashboards Deployed', value: '50+' },
+              { icon: Bot, label: 'AI Agents Shipped', value: '10+' },
+              { icon: Database, label: 'Data Pipelines', value: '30+' },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 text-center hover:border-teal-700/50 transition-all">
+                <Icon className="w-6 h-6 text-teal-400 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-slate-100">{value}</div>
+                <div className="text-xs text-slate-500 mt-1">{label}</div>
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-                <span className="text-gradient">Workhunt</span>{' '}<span className="text-slate-100">AI</span>
-              </h1>
-              <p className="text-xl text-slate-400 mt-6 max-w-xl leading-relaxed">
-                Your AI career co-pilot — automated job discovery, match scoring, CV generation,
-                and interview prep built exclusively for Hochschule Wismar students.
-              </p>
-            </div>
-
-            {/* Auth Card */}
-            <div className="w-full max-w-sm glass p-8 animate-slide-up">
-              {mode === 'verify' && (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-teal-900/50 rounded-full flex items-center justify-center mx-auto">
-                    <Mail className="w-8 h-8 text-teal-400" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-100">Verify Your Email</h2>
-                  <p className="text-slate-400 text-sm">We sent a confirmation link to <span className="text-teal-300 font-medium">{email}</span>. Click it to activate your account, then sign in.</p>
-                  <button onClick={() => { setMode('signin'); clearMsg() }} className="btn-primary w-full mt-4">Back to Sign In</button>
-                </div>
-              )}
-
-              {mode === 'forgot_sent' && (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-teal-900/50 rounded-full flex items-center justify-center mx-auto">
-                    <Mail className="w-8 h-8 text-teal-400" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-100">Reset Link Sent</h2>
-                  <p className="text-slate-400 text-sm">Check your inbox at <span className="text-teal-300 font-medium">{email}</span>. Click the link to set a new password.</p>
-                  <button onClick={() => { setMode('signin'); clearMsg() }} className="btn-primary w-full mt-4">Back to Sign In</button>
-                </div>
-              )}
-
-              {mode === 'forgot' && (
-                <div className="space-y-4">
-                  <button onClick={() => { setMode('signin'); clearMsg() }} className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1">
-                    ← Back to Sign In
-                  </button>
-                  <h2 className="text-xl font-bold text-slate-100">Forgot Password</h2>
-                  <p className="text-slate-400 text-sm">Enter your university email and we will send you a reset link.</p>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <input type="email" placeholder="you@stud.hs-wismar.de"
-                      value={email} onChange={e => setEmail(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleForgotPassword()}
-                      className="input-field pl-10 w-full" />
-                  </div>
-                  {msg && <div className={`text-xs px-3 py-2 rounded-lg ${isError ? 'bg-red-950/50 border border-red-800/50 text-red-300' : 'bg-teal-950/50 border border-teal-800/50 text-teal-300'}`}>{msg}</div>}
-                  <button onClick={handleForgotPassword} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                    Send Reset Link
-                  </button>
-                </div>
-              )}
-
-              {(mode === 'signin' || mode === 'signup') && (
-                <>
-                  {/* Tab switcher */}
-                  <div className="flex gap-1 bg-slate-800/50 rounded-xl p-1 mb-6">
-                    <button onClick={() => { setMode('signup'); clearMsg() }}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'signup' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
-                      Sign Up
-                    </button>
-                    <button onClick={() => { setMode('signin'); clearMsg() }}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'signin' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
-                      Sign In
-                    </button>
-                  </div>
-                  {mode === 'signup' && <p className="text-xs text-slate-500 -mt-4 mb-3 text-center">Create your account first, then sign in after verifying your email.</p>}
-
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input type="email" placeholder="you@stud.hs-wismar.de"
-                        value={email} onChange={e => setEmail(e.target.value)}
-                        className="input-field pl-10 w-full" />
-                    </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input type={showPass ? 'text' : 'password'} placeholder={mode === 'signup' ? 'Password (min 8 chars)' : 'Password'}
-                        value={password} onChange={e => setPassword(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && (mode === 'signup' ? handleSignUp() : handleSignIn())}
-                        className="input-field pl-10 pr-10 w-full" />
-                      <button onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
-                        {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-
-                    {mode === 'signin' && (
-                      <button onClick={() => { setMode('forgot'); clearMsg() }} className="text-xs text-teal-400 hover:text-teal-300 text-right w-full block">
-                        Forgot password?
-                      </button>
-                    )}
-
-                    {(msg || (urlError && !msg)) && (
-                      <div className={`text-xs px-3 py-2 rounded-lg ${isError ? 'bg-red-950/50 border border-red-800/50 text-red-300' : 'bg-teal-950/50 border border-teal-800/50 text-teal-300'}`}>
-                        {msg || (urlError === 'not_university' ? '⚠️ Only university emails are allowed.' : urlError === 'auth_failed' ? '⚠️ Authentication failed.' : urlError === 'unauthenticated' ? '⚠️ Please sign in to continue.' : '')}
-                      </div>
-                    )}
-
-                    <button onClick={mode === 'signup' ? handleSignUp : handleSignIn} disabled={loading}
-                      className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60">
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-                      {mode === 'signup' ? 'Create Account' : 'Sign In'}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">Everything you need, <span className="text-gradient">automated.</span></h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="glass p-6 hover:border-teal-700/50 transition-all duration-300 group">
-              <div className="w-10 h-10 bg-teal-950 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-900 transition-colors">
-                <Icon className="w-5 h-5 text-teal-400" />
+      {/* EXPERIENCE */}
+      <section id="experience" className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-3xl font-bold mb-12">
+          Professional <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Experience</span>
+        </h2>
+        <div className="space-y-8">
+          {EXPERIENCE.map((exp, i) => (
+            <div key={i} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 hover:border-teal-700/50 transition-all group">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-2 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors">{exp.title}</h3>
+                  <p className="text-sm text-slate-400">{exp.company}</p>
+                </div>
+                <span className="text-xs bg-teal-950 text-teal-300 border border-teal-800 px-3 py-1 rounded-full font-medium shrink-0">{exp.period}</span>
               </div>
-              <h3 className="font-semibold text-slate-100">{title}</h3>
-              <p className="text-sm text-slate-400 mt-2 leading-relaxed">{desc}</p>
+              <ul className="space-y-2">
+                {exp.bullets.map((b, j) => (
+                  <li key={j} className="text-sm text-slate-400 flex items-start gap-2">
+                    <Zap className="w-3.5 h-3.5 text-teal-500 mt-0.5 shrink-0" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Education */}
+        <h2 className="text-3xl font-bold mt-20 mb-10">
+          <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Education</span>
+        </h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          {EDUCATION.map((ed, i) => (
+            <div key={i} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-teal-700/50 transition-all">
+              <div className="flex items-start gap-3">
+                <GraduationCap className="w-5 h-5 text-teal-400 mt-0.5 shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-slate-200 text-sm">{ed.title}</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">{ed.school}</p>
+                  <p className="text-xs text-slate-600 mt-1">{ed.period}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* PROJECTS */}
+      <section id="projects" className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-3xl font-bold mb-12">
+          Featured <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Projects</span>
+        </h2>
+
+        {/* Workhunt AI — Featured */}
+        <div className="bg-gradient-to-br from-slate-900 to-teal-950/30 border border-teal-700/30 rounded-2xl p-8 mb-8 group hover:border-teal-600/50 transition-all">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-teal-600/20 border border-teal-600/30 rounded-full px-3 py-1 mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                <span className="text-xs font-semibold text-teal-300">FEATURED PROJECT</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-100">Workhunt AI</h3>
+              <p className="text-slate-400 mt-1">AI-Powered Career Co-Pilot for German University Students</p>
+            </div>
+            <Link href="/login" className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 text-sm flex items-center gap-2 shrink-0">
+              <ExternalLink className="w-4 h-4" /> Try It
+            </Link>
+          </div>
+          <p className="text-sm text-slate-400 leading-relaxed mb-5">
+            A full-stack serverless platform that automates job discovery from Germany's Federal Job Agency,
+            scores matches using Gemini AI (0–100%), generates ATS-compliant German CVs and English Cover Letters
+            in-browser with zero server storage, and provides STAR interview prep — all for free.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {['Next.js 14', 'Supabase', 'Gemini AI', 'Vercel', 'TypeScript', 'Leaflet', 'Telegram Bot'].map(t => (
+              <span key={t} className="text-xs bg-teal-950 text-teal-300 border border-teal-800 px-2.5 py-1 rounded-full font-medium">{t}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Other Projects */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            {
+              title: 'Nutreich Lifesciences',
+              desc: 'Strategic R&D automation pipeline for nutraceutical product development with data-driven formulation optimization.',
+              tags: ['Python', 'Data Analysis', 'R&D Automation'],
+            },
+            {
+              title: 'ChallengeX Platform',
+              desc: 'Full-stack platform architecture for competitive challenge hosting with real-time scoring and analytics engine.',
+              tags: ['Platform Architecture', 'Real-time Analytics', 'Full Stack'],
+            },
+          ].map(p => (
+            <div key={p.title} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 hover:border-teal-700/50 transition-all">
+              <h3 className="font-bold text-slate-200">{p.title}</h3>
+              <p className="text-sm text-slate-400 mt-2 leading-relaxed">{p.desc}</p>
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {p.tags.map(t => (
+                  <span key={t} className="text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full">{t}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SKILLS */}
+      <section id="skills" className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-3xl font-bold mb-12">
+          Skills & <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Competencies</span>
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {SKILLS.map(s => (
+            <div key={s.cat} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-teal-700/50 transition-all">
+              <h3 className="font-semibold text-sm text-teal-300 mb-3">{s.cat}</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {s.items.map(item => (
+                  <span key={item} className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">{item}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* HOBBIES */}
+      <section className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-3xl font-bold mb-12">
+          Beyond <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Code</span>
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {HOBBIES.map(h => (
+            <div key={h.name} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 text-center hover:border-teal-700/50 transition-all group">
+              <h.icon className="w-8 h-8 text-teal-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-slate-200">{h.name}</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">{h.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="max-w-3xl mx-auto px-6 py-24 text-center">
+        <div className="bg-gradient-to-br from-teal-950/50 to-slate-900 border border-teal-800/30 rounded-3xl p-12">
+          <Globe className="w-12 h-12 text-teal-400 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold mb-4">Need AI Automation for Your Business?</h2>
+          <p className="text-slate-400 mb-8 max-w-lg mx-auto">
+            I help companies replace manual processes with intelligent AI workflows —
+            from data pipelines to autonomous agents that work 24/7.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <a href="mailto:Kumarvaibhav40555@gmail.com" className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-2">
+              <Mail className="w-5 h-5" /> Email Me
+            </a>
+            <a href="https://linkedin.com/in/vaibhav-tunwal" target="_blank" className="bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium px-8 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
+              <Link2 className="w-5 h-5" /> LinkedIn
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
       <footer className="border-t border-slate-800 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-slate-500">
-          <span>© 2026 Workhunt AI · Hochschule Wismar</span>
-          <span>100% Free · Zero Data Sold · Open Source</span>
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+          <div className="flex items-center gap-4">
+            <span>© 2026 Vaibhav Tunwal</span>
+            <a href="mailto:Kumarvaibhav40555@gmail.com" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> Email</a>
+            <a href="https://linkedin.com/in/vaibhav-tunwal" target="_blank" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Link2 className="w-3.5 h-3.5" /> LinkedIn</a>
+            <a href="tel:+4915204604744" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> +49 1520 4604 744</a>
+          </div>
+          <span>Grenzhöfer Str. 5, 69214 Eppelheim, Germany</span>
         </div>
       </footer>
     </main>
-  )
-}
-
-export default function LandingPage() {
-  return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
-      </main>
-    }>
-      <LandingPageContent />
-    </Suspense>
   )
 }

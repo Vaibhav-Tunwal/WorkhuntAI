@@ -19,6 +19,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-leaflet": "^5.0.0",
+    "ts-jobspy": "^2.0.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

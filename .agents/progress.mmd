@@ -1,30 +1,49 @@
 # Workhunt AI — Build Progress State
-## Last Saved: 2026-08-06T19:22:00+02:00
+## Last Saved: 2026-08-24T21:00:00+05:30
 
-## ✅ COMPLETED FEATURES & RECENT updates
+## ✅ v2 Architecture Overhaul
 
-### 1. Auth Flow Enhancements
-- [x] Removed Google OAuth dependency completely.
-- [x] Default landing page state is now **Sign Up** (Sign up first before Sign in enforced).
-- [x] Implemented email/password verification flow (`app/page.tsx`).
-- [x] Created `app/forgot-password/page.tsx` and `app/reset-password/page.tsx` for password reset lifecycle.
-- [x] Hardcoded Admin fallback authentication check for `v.tunwal@stud.hs-wismar.de` in `app/page.tsx`, `components/Navbar.tsx`, and `app/admin/page.tsx`.
+### Portfolio Landing Page
+- [x] Created premium portfolio at `/` (`app/page.tsx`) with hero, about, experience, education, projects, skills, hobbies, CTA
+- [x] Generated AI avatar → `public/avatar.png`
+- [x] Workhunt AI featured in projects section with "Try It" link to `/login`
 
-### 2. Admin Portal & Management
-- [x] Built full Admin Control Panel (`app/admin/page.tsx`).
-- [x] Added `app/api/admin/users/route.ts` (GET all students, DELETE student).
-- [x] Added `app/api/admin/jobs/route.ts` (GET all jobs, POST add job manually, DELETE job).
+### Auth & Login
+- [x] Moved all auth logic to `/login` (`app/login/page.tsx`)
+- [x] Signup-first flow enforced (default tab = Sign Up)
+- [x] Admin hardcoded fallback (`v.tunwal@stud.hs-wismar.de`)
+- [x] Telegram group invite modal shown after successful login
+- [x] Forgot/Reset password flow at `/reset-password`
+- [x] Middleware redirects unauthenticated users to `/login`
 
-### 3. Study Buddy Map Fixes
-- [x] Solved Leaflet SSR and hydration crashes by refactoring `components/MapView.tsx` to pure Leaflet API inside `useEffect`.
-- [x] Updated `tools/migration.sql` `study_buddies` view to select `full_name` and `email`.
-- [x] Updated map pin popup to display **Name**, **University**, **Department**, **Student Email**, and **Instagram Handle** exclusively (Telegram removed).
+### Onboarding City Picker
+- [x] Added German city dropdown to onboarding Step 0 (`app/onboarding/page.tsx`)
+- [x] Created `lib/cities.ts` with 30 German cities + coordinates
+- [x] `current_city` saved to `profiles` table
 
-### 4. Job Ingestion & Vercel Cron
-- [x] Created `vercel.json` configured with daily cron schedule `0 0 * * *` (midnight) compatible with Vercel Hobby plan.
-- [x] Added `GET` handler in `app/api/jobs/ingest/route.ts` for automated Vercel Cron invocations.
-- [x] Updated `lib/ingestion.ts` with browser User-Agent headers, Google Custom Search API key handling, and fallback direct DELETE query for 6-day TTL job cleanup.
+### Dashboard + Germany Map
+- [x] Split dashboard into job feed (left 2/3) + Germany map sidebar (right 1/3)
+- [x] Created `components/GermanyMap.tsx` — Leaflet map with:
+  - Red pin: user's current city
+  - Teal circles: cities with active jobs (size = job count)
+- [x] Map is toggleable (show/hide button)
 
-### 5. Session Management & Profile Edit
-- [x] Created `components/SessionTracker.tsx` in `app/layout.tsx` for 15-minute inactivity session tracking and automatic logouts.
-- [x] Created `app/profile/page.tsx` allowing students to edit their name, study program, preferred roles, preferred locations, and add/remove skills dynamically.
+### Job Ingestion Expansion
+- [x] Expanded search terms from 5 → 15 diverse categories
+- [x] Covers: Software, Data, ML, DevOps, Business, Marketing, Finance, Consulting, Product, UI/UX, Backend, Cloud
+- [x] Target: 50+ diverse jobs per daily cron run
+
+### Admin Portal
+- [x] Admin check with hardcoded fallback in `page.tsx`, `Navbar.tsx`, `admin/page.tsx`
+- [x] Admin navbar shows ⚡ Admin with ShieldAlert icon
+- [x] Full CRUD: manage users + manage jobs + add job modal
+- [ ] TODO: Add user location map to admin panel
+- [ ] TODO: Add analytics charts
+
+### Database Updates
+- [x] Added `current_city TEXT` column to `profiles` table in `migration.sql`
+- [x] Updated `study_buddies` view with `full_name`, `email`, removed `telegram_handle`
+
+### Documentation
+- [x] BIBLE.md fully rewritten with Feature Locator Map
+- [x] progress.mmd updated

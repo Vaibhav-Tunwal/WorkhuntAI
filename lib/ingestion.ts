@@ -3,7 +3,12 @@ import { computeJobHash } from '@/lib/utils'
 import { extractJobSkills } from '@/lib/gemini'
 
 const FEDERAL_JOB_API = 'https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs'
-const SEARCH_TERMS = ['Softwareentwickler', 'Data Analyst', 'Werkstudent Informatik', 'IT Praktikum', 'Web Developer']
+const SEARCH_TERMS = [
+  'Softwareentwickler', 'Data Analyst', 'Werkstudent Informatik', 'IT Praktikum',
+  'Web Developer', 'Machine Learning', 'DevOps Engineer', 'Business Analyst',
+  'Marketing Manager', 'Finance Analyst', 'Consulting', 'Product Manager',
+  'UI UX Designer', 'Backend Developer', 'Cloud Engineer',
+]
 
 interface RawJob {
   titel?: string
@@ -74,7 +79,7 @@ async function sendTelegramAlert(jobTitle: string, company: string, jobId: strin
   if (!token || !chatId) return
 
   const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://workhuntai.vercel.app'}/dashboard?job=${jobId}`
-  
+
   // Using HTML parsing to ensure absolute reliability without markdown escape failures
   const message = `🚀 <b>New Job Match!</b>\n\n<b>Job:</b> ${jobTitle}\n<b>Company:</b> ${company}\n\n<a href="${appUrl}">View & Apply →</a>`
 
@@ -82,7 +87,7 @@ async function sendTelegramAlert(jobTitle: string, company: string, jobId: strin
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  }).catch(() => { })
 }
 
 // Main ingestion runner — called by cron route
@@ -130,7 +135,7 @@ export async function runJobIngestion(): Promise<{ inserted: number; skipped: nu
     if (description) {
       extractJobSkills(description).then(skills => {
         supabaseAdmin.from('jobs').update({ extracted_skills: skills }).eq('id', data.id)
-      }).catch(() => {})
+      }).catch(() => { })
     }
 
     // Send Telegram alert (fire-and-forget)

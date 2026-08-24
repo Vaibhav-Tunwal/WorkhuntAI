@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { Briefcase, FileText, Star, Users, Layout, LogOut, User } from 'lucide-react'
+import { Briefcase, FileText, Star, Users, Layout, LogOut, User, ShieldAlert } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export default function Navbar() {
@@ -21,7 +21,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    window.location.href = '/'
+    window.location.href = '/login'
   }
 
   const items = [
@@ -30,7 +30,7 @@ export default function Navbar() {
     { href: '/star', label: 'STAR Prep', icon: Star },
     { href: '/study-buddy', label: 'Study Buddy', icon: Users },
     { href: '/profile', label: 'Profile', icon: User },
-    ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: Layout }] : []),
+    ...(isAdmin ? [{ href: '/admin', label: '⚡ Admin', icon: ShieldAlert }] : []),
   ]
 
 

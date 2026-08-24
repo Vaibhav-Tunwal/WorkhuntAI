@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
   const isProtected = PROTECTED.some(p => path.startsWith(p))
 
   if (isProtected && !session) {
-    return NextResponse.redirect(new URL('/?error=unauthenticated', req.url))
+    return NextResponse.redirect(new URL('/login?error=unauthenticated', req.url))
   }
 
   return res
