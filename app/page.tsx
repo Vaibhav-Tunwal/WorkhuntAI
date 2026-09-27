@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Brain, Database, BarChart3, Bot, Briefcase, GraduationCap, Mail, Link2, Phone, ChevronDown, ExternalLink, Sparkles, Trophy, Target, Zap, Hash, Globe } from 'lucide-react'
+import { Brain, Database, BarChart3, Bot, Briefcase, GraduationCap, Mail, Link2, Phone, ChevronDown, ExternalLink, Sparkles, Trophy, Target, Zap, Hash, Globe, Dumbbell } from 'lucide-react'
 
 const EXPERIENCE = [
   {
@@ -21,7 +21,7 @@ const EXPERIENCE = [
     company: 'M&L Consulting Private Limited, India',
     bullets: [
       'Built scalable PMIS SaaS data models for infrastructure project management',
-      'Developed ML prediction models for project timeline & cost forecasting',
+      'Developed ML prediction models for project timeline, cost forecasting & anomaly detection',
       'Created Power BI dashboards serving 50+ enterprise clients',
     ],
   },
@@ -45,8 +45,8 @@ const SKILLS = [
 const HOBBIES = [
   { icon: Target, name: 'Poker', desc: 'Game theory & probabilistic decision-making under uncertainty' },
   { icon: Trophy, name: 'Chess', desc: 'Strategic pattern recognition & multi-step planning' },
-  { icon: Hash, name: 'Competitive Coding', desc: 'Algorithmic thinking & mathematical optimization' },
-  { icon: Sparkles, name: 'Rubik\'s Cube', desc: 'Spatial reasoning & systematic problem decomposition' },
+  { icon: Hash, name: 'Mathematical Trading', desc: 'Algorithmic thinking & mathematical optimization' },
+  { icon: Dumbbell, name: 'Sports', desc: 'Team coordination & physical fitness' },
 ]
 
 export default function PortfolioPage() {
@@ -109,7 +109,7 @@ export default function PortfolioPage() {
               <Sparkles className="w-5 h-5" /> View Projects
             </a>
             <a href="mailto:Kumarvaibhav40555@gmail.com" className="bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium px-8 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
-              <Mail className="w-5 h-5" /> Get in Touch
+              <Mail className="w-5 h-5" /> Kumarvaibhav40555@gmail.com
             </a>
           </div>
 
@@ -127,8 +127,8 @@ export default function PortfolioPage() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-4 text-slate-400 leading-relaxed">
             <p>
-              I'm an <span className="text-slate-200 font-medium">AI Automation Expert</span> and{' '}
-              <span className="text-slate-200 font-medium">Data Scientist</span> with a rare triple background in
+              I'm an <span className="text-slate-200 font-medium">AI Automation Enthusiast</span> and{' '}
+              <span className="text-slate-200 font-medium">Data Scientist</span> with a triple background in
               Computer Science (B.Tech), Data Science (B.Sc. IIT Madras), and International Management (M.Sc. Hochschule Wismar).
             </p>
             <p>
@@ -139,15 +139,15 @@ export default function PortfolioPage() {
             <p>
               My consulting work has improved profit margins by <span className="text-emerald-300 font-semibold">9.3%</span>,
               reduced overstock by <span className="text-emerald-300 font-semibold">17%</span>, and delivered
-              BI dashboards to <span className="text-emerald-300 font-semibold">50+ enterprise clients</span>.
+              BI dashboards to <span className="text-emerald-300 font-semibold">6+ enterprise clients</span>.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { icon: Brain, label: 'ML Models Built', value: '25+' },
-              { icon: BarChart3, label: 'Dashboards Deployed', value: '50+' },
-              { icon: Bot, label: 'AI Agents Shipped', value: '10+' },
-              { icon: Database, label: 'Data Pipelines', value: '30+' },
+              { icon: Brain, label: 'ML Models Built', value: '10+' },
+              { icon: BarChart3, label: 'Dashboards Deployed', value: '6+' },
+              { icon: Bot, label: 'AI Agents Shipped', value: '3+' },
+              { icon: Database, label: 'Data Pipelines', value: '2+' },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="bg-slate-900/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 text-center hover:border-teal-700/50 transition-all">
                 <Icon className="w-6 h-6 text-teal-400 mx-auto mb-2" />
@@ -307,14 +307,14 @@ export default function PortfolioPage() {
           <Globe className="w-12 h-12 text-teal-400 mx-auto mb-6" />
           <h2 className="text-3xl font-bold mb-4">Need AI Automation for Your Business?</h2>
           <p className="text-slate-400 mb-8 max-w-lg mx-auto">
-            I help companies replace manual processes with intelligent AI workflows —
+            I help to replace manual processes with intelligent AI workflows —
             from data pipelines to autonomous agents that work 24/7.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="mailto:Kumarvaibhav40555@gmail.com" className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-2">
               <Mail className="w-5 h-5" /> Email Me
             </a>
-            <a href="https://linkedin.com/in/vaibhav-tunwal" target="_blank" className="bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium px-8 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
+            <a href="https://www.linkedin.com/in/vaibhav-tunwal-768754229" target="_blank" className="bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium px-8 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
               <Link2 className="w-5 h-5" /> LinkedIn
             </a>
           </div>
@@ -327,10 +327,10 @@ export default function PortfolioPage() {
           <div className="flex items-center gap-4">
             <span>© 2026 Vaibhav Tunwal</span>
             <a href="mailto:Kumarvaibhav40555@gmail.com" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> Email</a>
-            <a href="https://linkedin.com/in/vaibhav-tunwal" target="_blank" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Link2 className="w-3.5 h-3.5" /> LinkedIn</a>
+            <a href="https://www.linkedin.com/in/vaibhav-tunwal-768754229" target="_blank" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Link2 className="w-3.5 h-3.5" /> LinkedIn</a>
             <a href="tel:+4915204604744" className="hover:text-teal-400 transition-colors flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> +49 1520 4604 744</a>
           </div>
-          <span>Grenzhöfer Str. 5, 69214 Eppelheim, Germany</span>
+          <span>Germany</span>
         </div>
       </footer>
     </main>
